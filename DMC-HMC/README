@@ -1,0 +1,96 @@
+--------------------------------------------------------------
+GC64-DMC SOFTWARE TOOLS
+--------------------------------------------------------------
+
+I.	Introduction
+II.	Required Software
+III.	Building Software
+IV.	Using the DMC Driver in Spike
+V.	Using the DMC Driver on an FPGA (Zynq)
+
+--------------------------------------------------------------
+
+
+I.	Introduction
+--------------------------------------------------------------
+
+The DMC microcode and DMC_Driver source code provides the
+basic microcode and driver function for the Dynamic
+Memory Coalescing (DMC) GC64 module.  The GC64 DMC unit
+provides memory coalescing capabilities between multiple
+GC64 task units and/or task procs.  The goal being to ingest
+individual memory requests from multiple, disparate cores
+and "coalesce" these requests into larger HMC payloads, thus
+minimizing the control overhead on the HMC memory bus.
+
+The source code is organized as follows:
+
+~/driver/	: contains the driver source code for
+		  experimentation in Spike or FPGA.
+~/ucode/	: contains the microcode implementations
+		  in C and assembly.  Also includes all the
+		  relevant header files
+~/examples/	: contains sample trace files used as input
+		  to the driver program for experimentation.
+
+
+II.	Required Software
+--------------------------------------------------------------
+
+The GC64-DMC and associated DMC microcode requires the
+RISCV (GCC) build environment.  You must also set the
+"RISCV" environment variable to point to the tools
+installation directory.  See www.riscv.org for more info
+on obtaining and building the tools.
+
+III.	Building Software
+--------------------------------------------------------------
+
+Ensure that the RISCV tools have been installed and the
+RISCV environment variable has been set.  Building the
+source is as easy as typing 'make'.
+
+$> make
+
+The output of the the build is a single RISCV executable,
+"dmc_driver".  Note that the driver is also built using
+the RISC-V base ISA and ELF Linux ABI.
+
+IV.	Using the DMC Driver in Spike
+--------------------------------------------------------------
+
+The DMC Driver and micocode can be executed using the RISCV
+functional simulator "Spike".  You may use the standard
+RISCV spike simulator or the gc64-isa-sim variant.  Both
+are known to work.
+
+To execute the dmc_driver binary using spike, you must have
+the RISCV environment variable set to the location of the
+RISCV tools installation directory.  You may then execute
+spike as follows:
+
+$> $RISCV/bin/spike pk ./dmc_driver <options>
+
+..where, <options> are as follows:
+
+* -h		: prints the help menu
+* -f filename	: sets the file containing the memory trace
+* -I            : read trace from STDIN
+* -t		: enable tracing output
+* -T            : enable deep tracing
+* -n 		: execute the C version of the microcode
+		: (default)
+* -s		: execute the assembly (optimized) version
+		: of the microcode.  Not currently
+		: implemented.
+* -p pipe       : read trace from named pipe
+* -P            : print stats at the end of the run
+
+The source directory contains several trace file
+examples in ~/examples".  We can execute a test as
+follows:
+
+$> $RISCV/bin/spike pk ./dmc_driver -f ./examples/trace.small.out
+
+--------------------------------------------------------------
+EOF

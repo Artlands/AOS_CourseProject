@@ -1,0 +1,36 @@
+TODO LIST FOR GC64-DMC
+------------------------------------------------
+
+- write the official packet handler
+
+------------------------------------------------
+DONE
+
+!DONE! - write some nice graphing scripts and analysis scripts 
+
+!DONE! - expand the current expiration logic to treat 
+  read and write traffic separately.  We need 
+  to split read requests on a modulo 128 bytes 
+  and any non-contiguous write requests.
+
+!DONE! - fix the bug in the hello_world app runtime, currently segfaults
+
+- !DONE! round the HMC requests up to the next modulo 16
+
+The current HMC trace only looks at the size
+recorded in the number of inserted bytes for 
+reads and writes, respectively.  This value
+needs to be rounded up to next greatest 
+power of two number of bytes
+
+_OR_
+
+We need to split the request
+into two sub-requests... however, 
+this requires more microcode latency 
+and more HMC control overhead 
+
+See the code in ./ucode/trace.c
+
+
+
