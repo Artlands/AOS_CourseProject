@@ -27,11 +27,7 @@ class ParsePower:
         raw_total = 0
         dmc_total = 0
 
-        label = ["LINK_PHY_POWER", "LINK_LOCAL_ROUTE_POWER", "LINK_REMOTE_ROUTE_POWER",
-        "XBAR_RQST_SLOT_POWER", "XBAR_RSP_SLOT_POWER","VAULT_RQST_SLOT_POWER",
-        "VAULT_RSP_SLOT_POWER", "VAULT_CTRL_POWER", "ROW_ACCESS_POWER"]
-
-        label2 = ["LINK_PHY", "LINK_LOCAL_ROUTE", "LINK_REMOTE_ROUTE",
+        label = ["LINK_PHY", "LINK_LOCAL_ROUTE", "LINK_REMOTE_ROUTE",
         "XBAR_RQST_SLOT", "XBAR_RSP_SLOT","VAULT_RQST_SLOT",
         "VAULT_RSP_SLOT", "VAULT_CTRL", "ROW_ACCESS"]
 
@@ -58,31 +54,31 @@ class ParsePower:
             efficiency = (raw_power[i] - dmc_power[i])/raw_power[i]
             power_eff.append(efficiency * 100)
 
-
+        print(label)
         print(f"RAW POWER : {raw_power}, TOTAL : {raw_total}")
         print(f"DMC POWER : {dmc_power}, TOTAL : {dmc_total}")
         print(f"POWER EFFICIENCY : {power_eff}, TOTAL : {(raw_total - dmc_total)/raw_total}")
 
         # raw_data = tuple(raw_power)
         # dmc_data = tuple(dmc_power)
-        eff_data = tuple(power_eff)
-        xlabels = tuple(label2)
-
-        ind = np.arange(len(eff_data))
-        width = 0.35
-
-        fig, ax = plt.subplots()
-        rects1 = ax.bar(ind - width/2, eff_data, width, color = 'SkyBlue', label = "Raw Trace")
-
-        # Add some text for labels, title and custom x-axis tick labels, etc.
-        ax.set_ylabel('Efficiency')
-        ax.set_title('Power Consumption Efficiency')
-        ax.set_xticks(ind)
-        ax.set_xticklabels(xlabels)
-        ax.legend()
-        plt.xticks(rotation=90)
-
-        plt.show()
+        # eff_data = tuple(power_eff)
+        # xlabels = tuple(label)
+        #
+        # ind = np.arange(len(eff_data))
+        # width = 0.35
+        #
+        # fig, ax = plt.subplots()
+        # rects1 = ax.bar(ind - width/2, eff_data, width, color = 'SkyBlue', label = "Raw Trace")
+        #
+        # # Add some text for labels, title and custom x-axis tick labels, etc.
+        # ax.set_ylabel('Efficiency')
+        # ax.set_title('Power Consumption Efficiency')
+        # ax.set_xticks(ind)
+        # ax.set_xticklabels(xlabels)
+        # ax.legend()
+        # plt.xticks(rotation=90)
+        #
+        # plt.show()
 
 
     def parse_args(self,argv):
