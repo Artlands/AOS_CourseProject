@@ -1,0 +1,13 @@
+Benchmark	  "MSHR Merger"   "FAC"
+BFS         4.04        13.359
+MG          56.027      72.252
+FFT         42.093      57.271
+GRAPPOLO    60.292      73.622
+HPCG        30.51       55.347
+NQUEENS     32.91       47.047
+SG          42.97       62.417
+SORT        32.67       53.556
+SP          44.5        61.113
+SPARSELU    40.62       69.907
+SSCA2       21.16       37.856
+SSSP        14.98       33.491

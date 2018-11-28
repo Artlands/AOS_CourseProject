@@ -4,11 +4,11 @@
 #
 # TEST: DMC POWER
 # ---------------------------------------
-CFLAGS = -I/Users/Artlands/Desktop/AdvancedOS/projects/gc64-hmcsim/include/ '-Wl,-rpath,/Users/Artlands/Desktop/AdvancedOS/projects/gc64-hmcsim/'
+CFLAGS = -I/Users/Artlands/Desktop/AdvancedOS/projects/gc64-hmcsim/include/
 
 CC = gcc
 
-LIBS = -lhmcsim
+LIBS = -L/Users/Artlands/Desktop/AdvancedOS/projects/gc64-hmcsim -lhmcsim
 
 SRC=./src
 

@@ -4,7 +4,7 @@ DMCPOWER=../dmc_power
 
 # TRACEFILE=../scatter.out
 
-TRACEFILE=../coalesced.txt
+TRACEFILE=../dmc_stream.out
 
 CFILE=./config.dmc
 

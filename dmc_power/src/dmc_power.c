@@ -780,7 +780,7 @@ int main( int argc, char **argv ) {
 			goto packet_recv;
 		}
 
-		printf( "....sending packets\n" );
+		// printf( "....sending packets\n" );
 			/*
 			 * try to push another request
 			 *
@@ -804,7 +804,7 @@ int main( int argc, char **argv ) {
 
 			if( simret == 0) {
 				plen = rqst_packet_length(rqst->op);
-				printf( "SENDING PACKET WITH %d FLITS", plen );
+				// printf( "SENDING PACKET WITH %d FLITS", plen );
 				if( plen > 1 ){
           // lay out packet
           packet[0] = head;
@@ -818,12 +818,12 @@ int main( int argc, char **argv ) {
         }
         simret = hmcsim_send( &hmc, &(packet[0]) );
 			} else {
-				printf("ERROR : FATAL : MALFORMED PACKET\n");
+				// printf("ERROR : FATAL : MALFORMED PACKET\n");
 			}
 
 			switch( simret ) {
 				case 0:
-					printf( "SUCCESS : PACKET WAS SUCCESSFULLY SENT\n" );
+					// printf( "SUCCESS : PACKET WAS SUCCESSFULLY SENT\n" );
 					all_sent++;
 					/* read the next request */
 	  			if (input == 0) {
@@ -859,11 +859,11 @@ int main( int argc, char **argv ) {
 	  			}
 					break;
 				case HMC_STALL:
-					printf( "STALLED : PACKET WAS STALLED IN SENDING\n" );
+					// printf( "STALLED : PACKET WAS STALLED IN SENDING\n" );
 					break;
 				case -1:
 				default:
-					printf( "FAILED : PACKET SEND FAILED\n" );
+					// printf( "FAILED : PACKET SEND FAILED\n" );
 					goto complete_failure;
 					break;
 			}
@@ -911,7 +911,7 @@ int main( int argc, char **argv ) {
 		 * Try to drain the responses off all the links
 		 *
 		 */
-		printf( "...reading responses\n" );
+		// printf( "...reading responses\n" );
 
 		while( simret != HMC_STALL) {
 
@@ -923,7 +923,7 @@ int main( int argc, char **argv ) {
 					stall_sig++;
 				}else {
 					/* successfully received a packet */
-					printf( "SUCCESS : RECEIVED A SUCCESSFUL PACKET RESPONSE\n" );
+					// printf( "SUCCESS : RECEIVED A SUCCESSFUL PACKET RESPONSE\n" );
           hmcsim_decode_memresponse(  &hmc,
 	                                    &(packet[0]),
 	                                    &d_response_head,
@@ -958,7 +958,7 @@ int main( int argc, char **argv ) {
 				 *
 				 */
 
-				printf( "STALLED : STALLED IN RECEIVING\n" );
+				// printf( "STALLED : STALLED IN RECEIVING\n" );
 				simret = HMC_STALL;
 			}
 
@@ -982,15 +982,15 @@ int main( int argc, char **argv ) {
 	 	 * done with sending/receiving packets
 		 * update the clock
 		 */
-		printf( "SIGNALING HMCSIM TO CLOCK\n" );
+		// printf( "SIGNALING HMCSIM TO CLOCK\n" );
 
 		// printf( "ALL_SENT = %ld\n", all_sent );
 		// printf( "0x%016llx\n",rqst.addr );
 
 		hmcsim_clock( &hmc );
 
-		printf( "ALL_SENT = %ld\n", all_sent );
-		printf( "ALL_RECV = %ld\n", all_recv );
+		// printf( "ALL_SENT = %ld\n", all_sent );
+		// printf( "ALL_RECV = %ld\n", all_recv );
 
 		if( rqst->type == 2 ) {
 			if( all_sent == all_recv ){

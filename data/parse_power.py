@@ -27,9 +27,11 @@ class ParsePower:
         raw_total = 0
         dmc_total = 0
 
-        label = ["LINK_PHY", "LINK_LOCAL_ROUTE", "LINK_REMOTE_ROUTE",
-        "XBAR_RQST_SLOT", "XBAR_RSP_SLOT","VAULT_RQST_SLOT",
-        "VAULT_RSP_SLOT", "VAULT_CTRL", "ROW_ACCESS"]
+        label = ["LINK-PHY", "LINK-LOCAL-ROUTE", "LINK-REMOTE-ROUTE",
+        "XBAR-RQST-SLOT", "XBAR-RSP-SLOT","VAULT-RQST-SLOT",
+        "VAULT-RSP-SLOT", "VAULT-CTRL", "ROW-ACCESS", "TOTAL"]
+
+        plot_file_name = f"to_plot.txt"
 
         with open(self.raw_file_name, "r") as rawfile:
             line = rawfile.readline()
@@ -42,7 +44,7 @@ class ParsePower:
             line = dmcfile.readline()
             while line:
                 if ( line[:12] == "HMCSIM_TRACE" and float(line.split(' : ')[3].rstrip()) != 0):
-                    dmc_power.append(float(line.split(' : ')[3].rstrip())/1000)
+                    dmc_power.append(float(line.split(' : ')[3].rstrip())/1000:)
                 line = dmcfile.readline()
 
         for power in raw_power:
@@ -54,32 +56,17 @@ class ParsePower:
             efficiency = (raw_power[i] - dmc_power[i])/raw_power[i]
             power_eff.append(efficiency * 100)
 
+        power_eff.append(100 * (raw_total - dmc_total)/raw_total)
+
+        with open(plot_file_name, "w") as plotfile:
+            for i in range(len(label)):
+                plotfile.write(f"{label[i]}   {power_eff[i]:.2f}")
+                plotfile.write("\n")
+
         print(label)
         print(f"RAW POWER : {raw_power}, TOTAL : {raw_total}")
         print(f"DMC POWER : {dmc_power}, TOTAL : {dmc_total}")
-        print(f"POWER EFFICIENCY : {power_eff}, TOTAL : {(raw_total - dmc_total)/raw_total}")
-
-        # raw_data = tuple(raw_power)
-        # dmc_data = tuple(dmc_power)
-        # eff_data = tuple(power_eff)
-        # xlabels = tuple(label)
-        #
-        # ind = np.arange(len(eff_data))
-        # width = 0.35
-        #
-        # fig, ax = plt.subplots()
-        # rects1 = ax.bar(ind - width/2, eff_data, width, color = 'SkyBlue', label = "Raw Trace")
-        #
-        # # Add some text for labels, title and custom x-axis tick labels, etc.
-        # ax.set_ylabel('Efficiency')
-        # ax.set_title('Power Consumption Efficiency')
-        # ax.set_xticks(ind)
-        # ax.set_xticklabels(xlabels)
-        # ax.legend()
-        # plt.xticks(rotation=90)
-        #
-        # plt.show()
-
+        print(f"POWER EFFICIENCY : {power_eff}, TOTAL : {100 * (raw_total - dmc_total)/raw_total}")
 
     def parse_args(self,argv):
         """parse args and set up instance variables"""
