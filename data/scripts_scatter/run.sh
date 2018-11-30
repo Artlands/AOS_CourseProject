@@ -4,7 +4,7 @@ DMCPOWER=../dmc_power
 
 # TRACEFILE=../scatter.out
 
-TRACEFILE=../dmc_scatter.out
+TRACEFILE=/home/jieli/DMC-HMC/dmc_scatter.out
 
 CFILE=./config.dmc
 

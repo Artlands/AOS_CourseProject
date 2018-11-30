@@ -35,20 +35,22 @@ class ParsePower:
         "XBAR-RQST-SLOT", "XBAR-RSP-SLOT","VAULT-RQST-SLOT",
         "VAULT-RSP-SLOT", "VAULT-CTRL", "ROW-ACCESS", "TOTAL"]
 
-        plot_file_name = f"to_plot_stack.txt"
+        plot_saving = f"PowerSaving.txt"
+        plot_rate = f"PowerRateStack.txt"
+        plot_power = f"PowerStack.txt"
 
         with open(self.raw_file_name, "r") as rawfile:
             line = rawfile.readline()
             while line:
                 if ( line[:12] == "HMCSIM_TRACE" and float(line.split(' : ')[3].rstrip()) != 0):
-                    raw_power.append(float(line.split(' : ')[3].rstrip())/1000)
+                    raw_power.append(float(line.split(' : ')[3].rstrip())/100)
                 line = rawfile.readline()
 
         with open(self.dmc_file_name, "r") as dmcfile:
             line = dmcfile.readline()
             while line:
                 if ( line[:12] == "HMCSIM_TRACE" and float(line.split(' : ')[3].rstrip()) != 0):
-                    dmc_power.append(float(line.split(' : ')[3].rstrip())/1000)
+                    dmc_power.append(float(line.split(' : ')[3].rstrip())/100)
                 line = dmcfile.readline()
 
         for power in raw_power:
@@ -74,12 +76,32 @@ class ParsePower:
 
         power_eff.append(100 * (raw_total - dmc_total)/raw_total)
 
-        with open(plot_file_name, "w") as plotfile:
-            plotfile.write("\"CATEGORY\"   \"POWER SAVING RATE\"  \"RAW DATA POWER RATE\"   \"DMC DATA POWER RATE\" ")
+        with open(plot_saving, "w") as plotfile:
+            plotfile.write("\"CATEGORY\"   \"POWER SAVING RATE\" ")
             plotfile.write("\n")
             for i in range(len(label)):
-                plotfile.write(f"{label[i]}  {power_eff[i]:.2f}  {raw_rate[i]:.2f}  {dmc_rate[i]:.2f}")
+                plotfile.write(f"{label[i]}  {power_eff[i]:.2f} ")
                 plotfile.write("\n")
+
+        with open(plot_rate, "w") as plotfile:
+
+            ## for stack power rate##
+            plotfile.write("\"CATEGORY\"   ")
+            for i in range(len(label)):
+                plotfile.write(f"\"{label[i]}\"   ")
+            plotfile.write("\n")
+
+            plotfile.write("\"RAW TRACE\"   ")
+            for i in range(len(raw_rate)):
+                plotfile.write(f"{raw_rate[i]:.2f}   ")
+            plotfile.write("\n")
+
+            plotfile.write("\"DMC TRACE\"   ")
+            for i in range(len(dmc_rate)):
+                plotfile.write(f"{dmc_rate[i]:.2f}   ")
+            plotfile.write("\n")
+
+        with open(plot_power, "w") as plotfile:
 
             ## for stack ##
             plotfile.write("\"CATEGORY\"   ")
@@ -87,28 +109,18 @@ class ParsePower:
                 plotfile.write(f"\"{label[i]}\"   ")
             plotfile.write("\n")
 
-            ## for stack power rate##
-            # plotfile.write("\"RAW TRACE\"   ")
-            # for i in range(len(raw_rate)):
-            #     plotfile.write(f"{raw_rate[i]:.2f}   ")
-            # plotfile.write("\n")
-            #
-            # plotfile.write("\"DMC TRACE\"   ")
-            # for i in range(len(dmc_rate)):
-            #     plotfile.write(f"{dmc_rate[i]:.2f}   ")
-            # plotfile.write("\n")
             ## for stack power##
-            # plotfile.write("\"RAW TRACE\"   ")
-            # for i in range(len(raw_power)):
-            #     plotfile.write(f"{raw_power[i]:.2f}   ")
-            # plotfile.write(f"{raw_total:.2f}   ")
-            # plotfile.write("\n")
-            #
-            # plotfile.write("\"DMC TRACE\"   ")
-            # for i in range(len(dmc_power)):
-            #     plotfile.write(f"{dmc_power[i]:.2f}   ")
-            # plotfile.write(f"{dmc_total:.2f}   ")
-            # plotfile.write("\n")
+            plotfile.write("\"RAW TRACE\"   ")
+            for i in range(len(raw_power)):
+                plotfile.write(f"{raw_power[i]:.2f}   ")
+            plotfile.write(f"{raw_total:.2f}   ")
+            plotfile.write("\n")
+
+            plotfile.write("\"DMC TRACE\"   ")
+            for i in range(len(dmc_power)):
+                plotfile.write(f"{dmc_power[i]:.2f}   ")
+            plotfile.write(f"{dmc_total:.2f}   ")
+            plotfile.write("\n")
 
 
 
@@ -133,7 +145,7 @@ class ParsePower:
 
     def usage(self):
         return """
-        Parse Power data and plot results:
+        Parse Power data :
 
         Usage:
 

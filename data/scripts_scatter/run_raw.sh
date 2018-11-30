@@ -2,7 +2,7 @@
 
 DMCPOWER=../dmc_power
 
-TRACEFILE=../scatter.out
+TRACEFILE=/home/shared/data/scatter.out
 
 CFILE=./config.dmc
 
