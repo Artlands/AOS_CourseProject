@@ -5,11 +5,13 @@
 
 include Makefile.include
 
+LIBS = -L/Users/Artlands/Desktop/AdvancedOS/projects/gc64-hmcsim -lhmcsim
+
 SRCS:=./ucode/trace.o ./ucode/ucode.o ./driver/driver.o
 
 all: dmc_driver
-dmc_driver: driver ucode utils
-	$(CC) $(CFLAGS) -o $@ $(SRCS)
+dmc_driver: driver ucode
+	$(CC) $(CFLAGS) -o $@ $(SRCS) $(LIBS)
 driver:
 	make -C driver
 ucode:

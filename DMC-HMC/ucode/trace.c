@@ -21,8 +21,9 @@ extern void trace_read( int sz, uint64_t addr){
 
   if( (__config.conf & CONF_TRACE) > 0 ){
     // coalesced memory, send to hmc-sim
-    //printf( "HMC_READ:%d:0x%016lx\n", sz, addr );
+    printf( "HMC_READ:%d:0x%016lx\n", sz, addr );
     // printf( "RD:8:0:0x%016lx\n", addr );
+    // printf( "Coalesced\n" );
     dmctrace->type = 1;
     dmctrace->size = sz;
     dmctrace->update = 1;
@@ -74,8 +75,9 @@ extern void trace_write(int sz, uint64_t addr){
   }
 
   if( (__config.conf & CONF_TRACE) > 0 ){
-    //printf( "HMC_WRITE:%d:0x%016lx\n", sz, addr );
+    printf( "HMC_WRITE:%d:0x%016lx\n", sz, addr );
    	// printf( "WR:8:0:0x%016lx\n",addr );
+    // printf( "Coalesced\n" );
     dmctrace->type = 0;
     dmctrace->size = sz;
     dmctrace->update = 1;

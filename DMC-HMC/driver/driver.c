@@ -19,6 +19,8 @@
 #include "dmc_ucode.h"
 #include "hmc_sim.h"
 
+// #define DEBUG=1
+
 //#define DEBUG
 /* ----------------------------------------------- FUNCTION PROTOTYPES */
 extern void ucode_init( uint64_t conf );
@@ -143,7 +145,7 @@ static int print_power(struct hmcsim_t *hmc) {
                          hmc->clk,
                          " : T_XBAR_RQST_SLOT_POWER : ",
                          hmc->power.t_xbar_rqst_slot);
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_XBAR_RSP_SLOT_POWER : ",
@@ -206,42 +208,42 @@ static void print_stats(){
 	printf( "--------------------------------------------------\n" );
         printf( " Runtime Stats\n" );
 	printf( "--------------------------------------------------\n" );
-        printf( "RD1        %llu\n", c_RD1 );
-        printf( "RD2        %llu\n", c_RD2 );
-        printf( "RD4        %llu\n", c_RD4 );
-        printf( "RD8        %llu\n", c_RD8 );
-        printf( "RD16       %llu\n", c_RD16 );
-        printf( "WR1        %llu\n", c_WR1 );
-        printf( "WR2        %llu\n", c_WR2 );
-        printf( "WR4        %llu\n", c_WR4 );
-        printf( "WR8        %llu\n", c_WR8 );
-        printf( "WR16       %llu\n", c_WR16 );
+        printf( "RD1        %lu\n", c_RD1 );
+        printf( "RD2        %lu\n", c_RD2 );
+        printf( "RD4        %lu\n", c_RD4 );
+        printf( "RD8        %lu\n", c_RD8 );
+        printf( "RD16       %lu\n", c_RD16 );
+        printf( "WR1        %lu\n", c_WR1 );
+        printf( "WR2        %lu\n", c_WR2 );
+        printf( "WR4        %lu\n", c_WR4 );
+        printf( "WR8        %lu\n", c_WR8 );
+        printf( "WR16       %lu\n", c_WR16 );
 	printf( "--------------------------------------------------\n" );
-        printf( "HMC_WR_16  %llu\n", h_WR16 );
-        printf( "HMC_WR_32  %llu\n", h_WR32 );
-        printf( "HMC_WR_48  %llu\n", h_WR48 );
-        printf( "HMC_WR_64  %llu\n", h_WR64 );
-        printf( "HMC_WR_80  %llu\n", h_WR80 );
-        printf( "HMC_WR_96  %llu\n", h_WR96 );
-        printf( "HMC_WR_112 %llu\n", h_WR112 );
-        printf( "HMC_WR_128 %llu\n", h_WR128 );
-        printf( "HMC_WR_256 %llu\n", h_WR256 );
-        printf( "HMC_RD_16  %llu\n", h_RD16 );
-        printf( "HMC_RD_32  %llu\n", h_RD32 );
-        printf( "HMC_RD_48  %llu\n", h_RD48 );
-        printf( "HMC_RD_64  %llu\n", h_RD64 );
-        printf( "HMC_RD_80  %llu\n", h_RD80 );
-        printf( "HMC_RD_96  %llu\n", h_RD96 );
-        printf( "HMC_RD_112 %llu\n", h_RD112 );
-        printf( "HMC_RD_128 %llu\n", h_RD128 );
-        printf( "HMC_RD_256 %llu\n", h_RD256 );
+        printf( "HMC_WR_16  %lu\n", h_WR16 );
+        printf( "HMC_WR_32  %lu\n", h_WR32 );
+        printf( "HMC_WR_48  %lu\n", h_WR48 );
+        printf( "HMC_WR_64  %lu\n", h_WR64 );
+        printf( "HMC_WR_80  %lu\n", h_WR80 );
+        printf( "HMC_WR_96  %lu\n", h_WR96 );
+        printf( "HMC_WR_112 %lu\n", h_WR112 );
+        printf( "HMC_WR_128 %lu\n", h_WR128 );
+        printf( "HMC_WR_256 %lu\n", h_WR256 );
+        printf( "HMC_RD_16  %lu\n", h_RD16 );
+        printf( "HMC_RD_32  %lu\n", h_RD32 );
+        printf( "HMC_RD_48  %lu\n", h_RD48 );
+        printf( "HMC_RD_64  %lu\n", h_RD64 );
+        printf( "HMC_RD_80  %lu\n", h_RD80 );
+        printf( "HMC_RD_96  %lu\n", h_RD96 );
+        printf( "HMC_RD_112 %lu\n", h_RD112 );
+        printf( "HMC_RD_128 %lu\n", h_RD128 );
+        printf( "HMC_RD_256 %lu\n", h_RD256 );
 	printf( "--------------------------------------------------\n" );
-        printf( "TOTAL_READ_INPUT     %llu\n", total_r_in );
-        printf( "TOTAL_WRITE_INPUT    %llu\n", total_w_in );
-        printf( "TOTAL_INPUT          %llu\n", total_in );
-        printf( "TOTAL_READ_OUTPUT    %llu\n", total_r_out );
-        printf( "TOTAL_WRITE_OUTPUT   %llu\n", total_w_out );
-        printf( "TOTAL_OUTPUT         %llu\n", total_out );
+        printf( "TOTAL_READ_INPUT     %lu\n", total_r_in );
+        printf( "TOTAL_WRITE_INPUT    %lu\n", total_w_in );
+        printf( "TOTAL_INPUT          %lu\n", total_in );
+        printf( "TOTAL_READ_OUTPUT    %lu\n", total_r_out );
+        printf( "TOTAL_WRITE_OUTPUT   %lu\n", total_w_out );
+        printf( "TOTAL_OUTPUT         %lu\n", total_out );
         printf( "READ_EFFICIENCY      %f\n",
                 (1.0f-(double)(total_r_out)/(double)(total_r_in))*100 );
         printf( "WRITE_EFFICIENCY     %f\n",
@@ -249,10 +251,10 @@ static void print_stats(){
         printf( "TOTAL_EFFICIENCY     %f\n",
                 (1.0f-(double)(total_out)/(double)(total_in))*100 );
 	printf( "--------------------------------------------------\n" );
-	printf( "TOTAL_REQUESTED_DATA_SIZE    %llu bytes\n",data_in );
-	printf( "TOTAL_TRANSFERED_DATA_SIZE   %llu bytes\n",data_out );
+	printf( "TOTAL_REQUESTED_DATA_SIZE    %lu bytes\n",data_in );
+	printf( "TOTAL_TRANSFERED_DATA_SIZE   %lu bytes\n",data_out );
 	printf( "EFFECTIVE_DATA_RATE	      %f%%\n", (double)data_in/(double)data_out*100 );
-	printf( "BANDWIDTH SAVING	      %llu bytes\n", (total_in - total_out)*32 );
+	printf( "BANDWIDTH SAVING	      %lu bytes\n", (total_in - total_out)*32 );
 	printf( "--------------------------------------------------\n" );
 }
 
@@ -954,12 +956,16 @@ int main( int argc, char **argv ){
   			printf("::DEBUG::    Ucode_insert starts\n");
   #endif
   			ucode_insert( rqst, index );
+
+        // printf( "Insert...\n" );
+
   #ifdef DEBUG
   			printf("::DEBUG::    Ucode_insert completed\n");
   #endif
   		}else{
   			// ucode_opt_insert( rqst );
   		}
+      printf( "DMC trace update? : %d\n", dmctrace->update );
 
     } //end of if (done == 0)
 
@@ -1005,6 +1011,14 @@ int main( int argc, char **argv ){
 			    // printf("ERROR : FATAL : MALFORMED PACKET\n");
   			}
 
+        /* reset the dmctrace*/
+        dmctrace->type = -1;
+        dmctrace->size = 0;
+        dmctrace->update = 0;
+        dmctrace->addr = 0x00ull;
+
+        printf( "Reset dmctrace update...\n" );
+
         switch ( simret ) {
           case 0:
             all_sent++;
@@ -1043,39 +1057,43 @@ int main( int argc, char **argv ){
      }  // end of dmctrace == update
 
 read_next_trace:
-    if (dmctrace->update == 1) {
-      /* reset the dmctrace*/
-      dmctrace->type = -1;
-      dmctrace->size = 0;
-      dmctrace->update = 0;
-      dmctrace->addr = 0x00ull;
-    }
+    if(dmctrace->end != 1) {
+      printf( "Read next trace...\n" );
+      if (dmctrace->update == 1) {
+        /* reset the dmctrace*/
+        dmctrace->type = -1;
+        dmctrace->size = 0;
+        dmctrace->update = 0;
+        dmctrace->addr = 0x00ull;
+      }
 
-    /* read a request from the input file */
-    if( input == 2 ){
-		  done = read_trace_pipe( fd, &rqst );
-		  /*valid rqsts should fall into the physical address space in spike linux kernel*/
-		  while(done != 0 || rqst.addr >= 0xffffffffff ){
-					done = read_trace_pipe(fd, &rqst);
-				if(done == -2 )
-					break;
-		  }
-    }else{
-			done = read_trace( infile, &rqst );
-		  	while(done == -1 || rqst.addr >= 0xffffffff){
-		  		done = read_trace( infile, &rqst );
-		  	}
-	  }
+      /* read a request from the input file */
+      if( input == 2 ){
+  		  done = read_trace_pipe( fd, &rqst );
+  		  /*valid rqsts should fall into the physical address space in spike linux kernel*/
+  		  while(done != 0 || rqst.addr >= 0xffffffffff ){
+  					done = read_trace_pipe(fd, &rqst);
+  				if(done == -2 )
+  					break;
+  		  }
+      }else{
+  			done = read_trace( infile, &rqst );
+  		  	while(done == -1 || rqst.addr >= 0xffffffff){
+  		  		done = read_trace( infile, &rqst );
+  		  	}
+  	  }
 
-    /* set flag showing this is the end of dmc trace*/
-    if( done == 1 ) {
-      dmctrace->end = 1;
-      if( all_sent == all_recv ) {
-        printf( "ALL_TRACES = %ld\n", trace );
-        simdone = 1;
-        print_power(&hmc);
+      /* set flag showing this is the end of dmc trace*/
+      if( done == 1 ) {
+        dmctrace->end = 1;
+        if( all_sent == all_recv ) {
+          printf( "ALL_TRACES = %ld\n", trace );
+          simdone = 1;
+          print_power(&hmc);
+        }
       }
     }
+
 
     /* at this point, if done == 1 means finished reading all trace file */
 packet_recv:
@@ -1191,7 +1209,7 @@ complete_failure:
     print_stats();
   }
 
-	printf("Total Page request number: %llu\n",page_num);
+	printf("Total Page request number: %lu\n",page_num);
 	printf( "--------------------------------------------------\n" );
 	if(analysis == 1){
 		printf("Total rqsts that could be coalesced across pages:   %d\n", count);

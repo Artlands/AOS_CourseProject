@@ -19,6 +19,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <inttypes.h>
+#include <time.h>
 #include "hmc_sim.h"
 
 /* -------------------------------------------------- PRINT_HELP */
@@ -477,6 +478,9 @@ int main( int argc, char **argv ) {
 	// FILE *outfile2 = NULL;
 	char filename[1024];
 
+	clock_t start, end;
+	double cpu_time_used;
+
 	int dmc = 0;
 	struct hmcmtrace *rqst =  malloc(sizeof(struct hmcmtrace));
 
@@ -732,6 +736,7 @@ int main( int argc, char **argv ) {
 	 * until we get a stall signal
  	 */
 
+	start = clock();
 	while( done != 1 ) {
 
 		/*
@@ -997,6 +1002,9 @@ int main( int argc, char **argv ) {
 				printf( "ALL_TRACES = %ld\n", trace );
 				done = 1;
 				print_power(&hmc);
+				end = clock();
+				cpu_time_used = ( (double) (end - start)) / CLOCKS_PER_SEC;
+				printf("Total Computing time is : %f s\n", cpu_time_used );
 			}
 		}
 	}
