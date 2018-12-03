@@ -35,28 +35,12 @@ typedef enum{
 	RD2	= 0x002,	/* -- 2-byte read */
 	RD4	= 0x004,	/* -- 4-byte read */
 	RD8	= 0x008,	/* -- 8-byte read */
-	RD16	= 0x010,	/* -- 16-byte read */
-	RD32,
-	RD64,
-	RD80,
-	RD96,
-	RD112,
-	RD128,
-
+	RD15	= 0x010,	/* -- 16-byte read */
 	WR1	= 0x101,	/* -- 1-byte write */
 	WR2	= 0x102,	/* -- 2-byte write */
 	WR4	= 0x104,	/* -- 4-byte write */
 	WR8	= 0x108,	/* -- 8-byte write */
-	WR16	= 0x110,	/* -- 16-byte write */
-	WR32,
-	WR64,
-	WR80,
-	WR96,
-	WR112,
-	WR128,
-
-	FLOW_NULL
-
+	WR15	= 0x110		/* -- 16-byte write */
 }MEMOP;
 
 /*

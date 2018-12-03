@@ -15,12 +15,15 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <inttypes.h>
 #include "dmc_ucode.h"
+#include "hmc_sim.h"
+
 //#define DEBUG
 /* ----------------------------------------------- FUNCTION PROTOTYPES */
 extern void ucode_init( uint64_t conf );
 extern void ucode_insert();
-// extern void ucode_opt_insert();
+extern void ucode_opt_insert();
 extern void ucode_flush();
 extern void ucode_free();
 extern void hmc_init(hmc_list *node);
@@ -29,9 +32,8 @@ extern hmc_list *head;
 extern hmc_list *tail;
 extern int tree_cnt[32];
 extern uint64_t accelerated_page;
-
 /* ----------------------------------------------- GLOBALS */
-struct mtrace *hmctrace;
+struct mptrace *dmctrace;
 
 uint64_t page_num;
 
@@ -97,26 +99,102 @@ static void init_stats(){
   h_RD128=0x00ll;
   h_RD256=0x00ll;
 }
+
+/* ---------------------------------------------------- ZERO_PACKET */
+/* ZERO_PACKET */
+
+static void zero_packet( uint64_t *packet ) {
+	uint64_t i = 0x00ll;
+	for( i=0; i<HMC_MAX_UQ_PACKET; i++ ){
+		packet[i] = 0x00ll;
+	}
+	return ;
+}
+
+/* ----------------------------------------------- PRINT_POWER */
+static int print_power(struct hmcsim_t *hmc) {
+
+	if( hmc == NULL ){
+    return -1;
+  }else if( hmc->tfile == NULL ){
+    return -1;
+	}
+  /*
+   * write out the total trace values for power on this clock cycle
+   *
+   */
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
+                         "HMCSIM_TRACE : ",
+                         hmc->clk,
+                         " : T_LINK_PHY_POWER : ",
+                         hmc->power.t_link_phy );
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
+                         "HMCSIM_TRACE : ",
+                         hmc->clk,
+                         " : T_LINK_LOCAL_ROUTE_POWER : ",
+                         hmc->power.t_link_local_route );
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
+                         "HMCSIM_TRACE : ",
+                         hmc->clk,
+                         " : T_LINK_REMOTE_ROUTE_POWER : ",
+                         hmc->power.t_link_remote_route );
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
+                         "HMCSIM_TRACE : ",
+                         hmc->clk,
+                         " : T_XBAR_RQST_SLOT_POWER : ",
+                         hmc->power.t_xbar_rqst_slot);
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+                         "HMCSIM_TRACE : ",
+                         hmc->clk,
+                         " : T_XBAR_RSP_SLOT_POWER : ",
+                         hmc->power.t_xbar_rsp_slot);
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
+                         "HMCSIM_TRACE : ",
+                         hmc->clk,
+                         " : T_XBAR_ROUTE_EXTERN_POWER : ",
+                         hmc->power.t_xbar_route_extern);
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
+                         "HMCSIM_TRACE : ",
+                         hmc->clk,
+                         " : T_VAULT_RQST_SLOT_POWER : ",
+                         hmc->power.t_vault_rqst_slot);
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
+                         "HMCSIM_TRACE : ",
+                         hmc->clk,
+                         " : T_VAULT_RSP_SLOT_POWER : ",
+                         hmc->power.t_vault_rsp_slot);
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
+                         "HMCSIM_TRACE : ",
+                         hmc->clk,
+                         " : T_VAULT_CTRL_POWER : ",
+                         hmc->power.t_vault_ctrl);
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
+                         "HMCSIM_TRACE : ",
+                         hmc->clk,
+                         " : T_ROW_ACCESS_POWER : ",
+                         hmc->power.t_row_access);
+		return 0;
+};
 /* ----------------------------------------------- PRINT_STATS */
 static void print_stats(){
-  uint64_t total_r_in = 0x00ll;
-  uint64_t total_w_in = 0x00ll;
-  uint64_t total_in   = 0x00ll;
-  uint64_t total_r_out= 0x00ll;
-  uint64_t total_w_out= 0x00ll;
-  uint64_t total_out  = 0x00ll;
-	uint64_t data_in    = 0x00ll;
-	uint64_t data_out   = 0x00ll;
+        uint64_t total_r_in = 0x00ll;
+        uint64_t total_w_in = 0x00ll;
+        uint64_t total_in   = 0x00ll;
+        uint64_t total_r_out= 0x00ll;
+        uint64_t total_w_out= 0x00ll;
+        uint64_t total_out  = 0x00ll;
+      	uint64_t data_in    = 0x00ll;
+      	uint64_t data_out   = 0x00ll;
 
-  total_r_in =  c_RD1 + c_RD2 + c_RD4 + c_RD8 + c_RD16;
-  total_w_in =  c_WR1 + c_WR2 + c_WR4 + c_WR8 + c_WR16;
-  total_in   =  total_r_in + total_w_in;
+        total_r_in =  c_RD1 + c_RD2 + c_RD4 + c_RD8 + c_RD16;
+        total_w_in =  c_WR1 + c_WR2 + c_WR4 + c_WR8 + c_WR16;
+        total_in   =  total_r_in + total_w_in;
 
-  total_r_out=  h_RD16+h_RD32+h_RD48+h_RD64+h_RD80+h_RD96+
-                h_RD112+h_RD128+h_RD256;
-  total_w_out=  h_WR16+h_WR32+h_WR48+h_WR64+h_WR80+h_WR96+
-                h_WR112+h_WR128+h_WR256;
-  total_out  =  total_r_out + total_w_out;
+        total_r_out=  h_RD16+h_RD32+h_RD48+h_RD64+h_RD80+h_RD96+
+                      h_RD112+h_RD128+h_RD256;
+        total_w_out=  h_WR16+h_WR32+h_WR48+h_WR64+h_WR80+h_WR96+
+                      h_WR112+h_WR128+h_WR256;
+        total_out  =  total_r_out + total_w_out;
 
 	data_in	   =  c_RD1 + c_RD2*2 + c_RD4*4 + c_RD8*8 + c_RD16*16 +
 		      c_WR1 + c_WR2*2 + c_WR4*4 + c_WR8*8 + c_WR16*16;
@@ -173,7 +251,7 @@ static void print_stats(){
 	printf( "--------------------------------------------------\n" );
 	printf( "TOTAL_REQUESTED_DATA_SIZE    %llu bytes\n",data_in );
 	printf( "TOTAL_TRANSFERED_DATA_SIZE   %llu bytes\n",data_out );
-	printf( "EFFECTIVE_DATA_RATE	      %f%\n", (double)data_in/(double)data_out*100 );
+	printf( "EFFECTIVE_DATA_RATE	      %f%%\n", (double)data_in/(double)data_out*100 );
 	printf( "BANDWIDTH SAVING	      %llu bytes\n", (total_in - total_out)*32 );
 	printf( "--------------------------------------------------\n" );
 }
@@ -194,8 +272,6 @@ static void print_help(){
 	printf( " -n                : execute C version of ucode\n" );
 	printf( " -s                : execute assembly version of ucode\n" );
   printf( " -P                : print stats at the end of the run\n" );
-  printf( " -R                : generate raw data HMC-SIM Power result\n" );
-  printf( " -C                : generate coalesced data HMC-SIM Power result\n" );
 	printf( "--------------------------------------------------\n" );
 }
 
@@ -222,7 +298,7 @@ static int get_memop( int type, int nbytes, MEMOP *op ){
         c_WR8++;
 				break;
 			case 16:
-				*op = WR16;
+				*op = WR15;
         c_WR16++;
 				break;
 			default:
@@ -250,7 +326,7 @@ static int get_memop( int type, int nbytes, MEMOP *op ){
         c_RD8++;
 				break;
 			case 16:
-				*op = RD16;
+				*op = RD15;
         c_RD16++;
 				break;
 			default:
@@ -353,7 +429,6 @@ static int read_trace_pipe( int fd, struct mtrace *otrace ){
 	otrace->proc 	= proc;
 	otrace->op	= op;
 	otrace->addr	= addr;
-  otrace->type = type;
 
 #ifdef DEBUG
 	printf( "::DEBUG::      proc = %d, op = %d, addr = 0x%016lx\n", otrace->proc,(int)(otrace->op), otrace->addr );
@@ -399,8 +474,8 @@ static int read_trace( FILE *infile, struct mtrace *otrace ){
 
 	if( (len < 23 ) || (len >29) ){
 		/* return a special error code indicating
-     * that this is a bogus line
-     */
+                 * that this is a bogus line
+	         */
 		return -1;
 	}
 	/*
@@ -447,7 +522,6 @@ static int read_trace( FILE *infile, struct mtrace *otrace ){
 	otrace->proc 	= proc;
 	otrace->op	= op;
 	otrace->addr	= addr;
-  otrace->type = type;
 
 #ifdef DEBUG
 	printf( "::DEBUG::      proc = %d\n", otrace->proc );
@@ -514,6 +588,7 @@ int main( int argc, char **argv ){
 	uint64_t conf	= 0x00ull;
 	FILE *infile	= NULL;
 	FILE *infile2	= NULL;
+  FILE *outfile = NULL; /*save hmcsim power evaluation to an output file */
 	struct mtrace rqst;
 	struct mtrace rqst2;
 	int analysis	= 0;
@@ -526,6 +601,82 @@ int main( int argc, char **argv ){
 	int page_n	= 0;
 	char filename[1024];
 	char filename2[1024];
+
+  /* Init dmctrace*/
+  dmctrace = malloc( sizeof( struct mptrace ) );
+  dmctrace->type = -1;
+  dmctrace->size = 0;
+  dmctrace->update = 0;
+  dmctrace->end = 0;
+  dmctrace->addr = 0x00ull;
+
+  /* vars for init hmc-sim */
+	// uint32_t i		= 0;
+  int simdone = 0;
+	uint32_t num_devs	= 1;
+	uint32_t num_links	= 4;
+	uint32_t num_vaults	= 32;
+	uint32_t queue_depth	= 64;
+	uint32_t num_banks	= 16;
+	uint32_t num_drams	= 20;
+	uint32_t capacity	= 4;
+	uint32_t xbar_depth	= 128;
+  uint32_t bsize  = 128;
+	char *cfile = NULL;
+	struct hmcsim_t hmc;
+
+  /* vars for running hmc-sim */
+	uint64_t head	= 0x00ll;
+  uint64_t tail	= 0x00ll;
+  uint64_t payload[16]	= { 0x00ll, 0x00ll, 0x00ll, 0x00ll,
+	                         	0x00ll, 0x00ll, 0x00ll, 0x00ll,
+														0x00ll, 0x00ll, 0x00ll, 0x00ll,
+														0x00ll, 0x00ll, 0x00ll, 0x00ll
+													 };
+
+	int simret = HMC_OK; 	// for running hmc-sim
+  int recvflg = 0;
+	// int rddone = 0; 			// for read_hmc_trace
+	// int bidret = HMC_OK;	// for hmcsim_send_memrequest
+	// uint32_t done	= 0;
+
+	uint8_t	cub		= 0;
+	uint8_t link		= 0;
+	uint16_t tag	= 0;
+	int stall_sig	= 0;
+
+	uint32_t plen = 0;	// hmc memory request packet size
+	uint64_t packet[HMC_MAX_UQ_PACKET];
+
+	int *rtns	= NULL;		//record status for each link
+	long all_sent	= 0;
+	long all_recv	= 0;
+	long trace = 0;
+
+	uint64_t d_response_head;
+  uint64_t d_response_tail;
+  hmc_response_t d_type;
+  uint8_t d_length;
+  uint16_t d_tag;
+  uint8_t d_rtn_tag;
+  uint8_t d_src_link;
+  uint8_t d_rrp;
+  uint8_t d_frp;
+  uint8_t d_seq;
+  uint8_t d_dinv;
+  uint8_t d_errstat;
+  uint8_t d_rtc;
+  uint32_t d_crc;
+  /*
+   * open the outfile
+   *
+   */
+  outfile = fopen( "dmc_power.out", "w" );
+  if( outfile == NULL ){
+    printf( "FAILED : COULD NOT OPEN OUPUT FILE dmc_trace.out\n" );
+    return -1;
+  }
+
 	/* ---- */
 	page_num	= 0;
 	for(i = 0; i < 32; i ++)
@@ -599,27 +750,105 @@ int main( int argc, char **argv ){
 	  if( infile == NULL ){
       printf( "error : could not open file %s\n", filename );
       return -1;
-    }
-  }
-  else if( input == 2 ){
-    if( strlen(filename) == 0 ){
-      printf( "ERROR : filename is invalid\n" );
-      return -1;
-    }
-    fd = open( filename, O_RDONLY );
-    if( fd == -1 ){
-      printf( "ERROR : COULD NOT OPEN NAMED PIPE AT %s\n", filename );
-      return -1;
-    }
-  }else{
-    infile = stdin;
-  }
+	  }
+	}
+	else if( input == 2 ){
+          if( strlen(filename) == 0 ){
+            printf( "ERROR : filename is invalid\n" );
+            return -1;
+          }
+          fd = open( filename, O_RDONLY );
+          if( fd == -1 ){
+            printf( "ERROR : COULD NOT OPEN NAMED PIPE AT %s\n", filename );
+            return -1;
+          }
+        }else{
+          infile = stdin;
+        }
 
 	/* init the internal data structures */
 	ucode_init(conf);
 #ifdef DEBUG
 	printf("ucode_init completed\n");
 #endif
+
+/* ----------------------------------------init the hmc-sim library */
+
+  ret = hmcsim_init( &hmc,
+	                   num_devs,
+	                   num_links,
+	                   num_vaults,
+	                   queue_depth,
+	                   num_banks,
+	                   num_drams,
+	                   capacity,
+	                   xbar_depth );
+  if( ret != 0 ){
+    printf( "FAILED TO INIT HMCSIM\n" );
+    return -1;
+  }else{
+    printf( "SUCCESS : INITIALIZED HMCSIM\n" );
+  }
+
+	if( cfile != NULL ) {
+		if( hmcsim_read_config( &hmc, cfile ) != 0 ) {
+			printf("FAILED TO READ CONFIG FILE : %s\n", cfile );
+			hmcsim_free( &hmc );
+			return -1;
+		}
+	}
+
+	/*
+   * setup the device topology
+   *
+   */
+  if( num_devs > 1 ){
+    /*
+     * MULTIPLE DEVICES
+     *
+     */
+  }else{
+    /*
+     * SINGLE DEVICE
+     *
+     */
+
+    for( i=0; i<num_links; i++ ){
+      ret = hmcsim_link_config( &hmc,
+                                (num_devs+1),
+                                0,
+                                i,
+                                i,
+                                HMC_LINK_HOST_DEV );
+
+      if( ret != 0 ){
+        printf( "FAILED TO INIT LINK %d\n", i );
+
+        hmcsim_free( &hmc );
+				free(dmctrace);
+
+        return -1;
+      }else{
+        printf( "SUCCESS : INITIALIZED LINK %d\n", i );
+      }
+    }
+  }
+
+	/*
+   * init the max request block size
+   *
+   */
+  ret = hmcsim_util_set_all_max_blocksize( &hmc, bsize );
+
+  if( ret != 0 ){
+    printf( "FAILED TO INIT MAX BLOCKSIZE\n" );
+    hmcsim_free( &hmc );
+		free(dmctrace);
+    return -1;
+  }else {
+    printf( "SUCCESS : INITIALIZED MAX BLOCK SIZE\n" );
+  }
+/*---------------------------------------------end of init hmc-sim*/
 
 	/* read a request from the input file */
   if( input == 2 ){
@@ -640,75 +869,189 @@ int main( int argc, char **argv ){
 #ifdef DEBUG
 	printf("::DEBUG::    first read trace completed\n");
 #endif
-	/* begin the sim execution */
+
+	/* ------------------------------------begin the sim execution */
+
+  /*
+   * execute the hmc-sim
+   * setup the tracing mechanisms
+   */
+	rtns = malloc( sizeof( int ) * hmc.num_links );
+	memset( rtns, 0, sizeof( int ) * hmc.num_links );
+
+	hmcsim_trace_handle( &hmc, outfile );
+	hmcsim_trace_level( &hmc, (HMC_TRACE_POWER) );		//only trace power info
+	hmcsim_trace_header( &hmc );
+
+	printf( "SUCCESS : INITIALIZED TRACE HANDLERS\n" );
+
+  /*
+   * zero the packet
+   *
+   */
+  zero_packet( &(packet[0]) );
+
+  printf( "BEGINNING TEST EXECUTION\n" );
 
 
+  /* hmc-sim must done after reading all traces */
+	while( simdone != 1  ){
 
-	while( done == 0 ){
-		/*===========frame-based dmc starts here===============*/
-		index = get_tree_index(rqst.addr);
-#ifdef DEBUG
-	printf("::DEBUG::    Tree index get: %d\n", index);
-#endif
+    if(done == 0) {
+      /* coalescing only runs with valid trace */
+      /*===========frame-based dmc starts here===============*/
+  		index = get_tree_index(rqst.addr);
+  #ifdef DEBUG
+  	printf("::DEBUG::    Tree index get: %d\n", index);
+  #endif
 
-		/*Coalescing Tree postions are full, need to flush all the trees*/
-		if(index == -1){
-			//printf("No free coalescing tree position, start flushing\n");
-			ucode_flush();
-			index = 0;
-			root[index].req.addr = (rqst.addr&0xfffff000);
-		}
+  		/*Coalescing Tree postions are full, need to flush all the trees*/
+  		if(index == -1){
+  			//printf("No free coalescing tree position, start flushing\n");
+  			ucode_flush();
+  			index = 0;
+  			root[index].req.addr = (rqst.addr&0xfffff000);
+  		}
 
-		// while(analysis == 1){
-    //
-		// 	if(rqst.addr + (rqst.op&0xff) >= root[index].req.addr+0x1000 )
-		// 		cnt_across++;
-		// 	// for the case that operation types are different, set op_flag for break;
-		// 	if((rqst.op & oper) < 0x100 && (rqst.op | oper) >= 0x100 ){
-		// 		a_addr	= rqst.addr;
-		// 		p_addr 	= a_addr & 0xfffff000;
-		// 		oper   	= rqst.op;
-		// 		op_flag	= 0;
-		// 	}
-		// 	else
-		// 		op_flag = 1;
-		// 	//check if two pages are consecutive or not
-		// 	if(oper<(p_addr == root[index].req.addr+0x1000) || (p_addr == root[index].req.addr - 0x1000) ){
-		// 		page_n++;
-		// 		if(op_flag == 0)
-		// 			break;
-		// 		if(a_addr > rqst.addr){
-    //
-		// 			if(a_addr-(rqst.addr + (rqst.op&0xff)) <= 256 )
-		// 				count++;
-		// 		}
-		// 		else{
-		// 			if(rqst.addr + (rqst.op&0xff) - a_addr <= 256 )
-		// 				count++;
-    //
-		// 		}
-		// 	}
-		// 	a_addr	= rqst.addr;
-		// 	p_addr 	= a_addr & 0xfffff000;
-		// 	oper   	= rqst.op;
-		// 	break;
-		// }
-		/* insert it */
-		if( type == 0 ){
+  		while(analysis == 1){
 
-#ifdef DEBUG
-			printf("::DEBUG::    Ucode_insert starts\n");
-#endif
-			ucode_insert( rqst, index );
-#ifdef DEBUG
-			printf("::DEBUG::    Ucode_insert completed\n");
-#endif
-		}
-    // else{
-		// 	ucode_opt_insert( rqst );
-		// }
+  			if(rqst.addr + (rqst.op&0xff) >= root[index].req.addr+0x1000 )
+  				cnt_across++;
+  			// for the case that operation types are different, set op_flag for break;
+  			if((rqst.op & oper) < 0x100 && (rqst.op | oper) >= 0x100 ){
+  				a_addr	= rqst.addr;
+  				p_addr 	= a_addr & 0xfffff000;
+  				oper   	= rqst.op;
+  				op_flag	= 0;
+  			}
+  			else
+  				op_flag = 1;
+  			//check if two pages are consecutive or not
+  			if(oper<(p_addr == root[index].req.addr+0x1000) || (p_addr == root[index].req.addr - 0x1000) ){
+  				page_n++;
+  				if(op_flag == 0)
+  					break;
+  				if(a_addr > rqst.addr){
 
-		/* read a request from the input file */
+  					if(a_addr-(rqst.addr + (rqst.op&0xff)) <= 256 )
+  						count++;
+  				}
+  				else{
+  					if(rqst.addr + (rqst.op&0xff) - a_addr <= 256 )
+  						count++;
+
+  				}
+  			}
+  			a_addr	= rqst.addr;
+  			p_addr 	= a_addr & 0xfffff000;
+  			oper   	= rqst.op;
+  			break;
+  		}
+  		/* insert it */
+  		if( type == 0 ){
+
+  #ifdef DEBUG
+  			printf("::DEBUG::    Ucode_insert starts\n");
+  #endif
+  			ucode_insert( rqst, index );
+  #ifdef DEBUG
+  			printf("::DEBUG::    Ucode_insert completed\n");
+  #endif
+  		}else{
+  			// ucode_opt_insert( rqst );
+  		}
+
+    } //end of if (done == 0)
+
+
+    /*---check if dmctrace is updated
+     * if simret != HMC_STALL and  dmctrace is updated, build a hmcsim request
+     * else, read next trace
+     */
+
+     if (dmctrace->update == 1) {
+       /* dmc trace is updated */
+       /*if hmc-sim is not stall, send request*/
+       simret = hmcsim_build_memrequest( &hmc,
+																			cub,
+																			dmctrace->addr,
+																			tag,
+																			dmctrace->size,
+																			link,
+																			&(packet[0]),
+																			&head,
+																			&tail );
+        if( simret == 0) {
+  				if( dmctrace->type == 0 ){
+            // write
+            // use max size 128. i.e. 9FLITs
+            if ( dmctrace->size == 256 ) {
+              plen = 9;
+            } else {
+              plen = ( dmctrace->size )/16;
+            }
+            // lay out packet
+            packet[0] = head;
+            for(i=0; i<((plen-1)*2); i++ ){
+              packet[i+1] = payload[i];
+            }
+            packet[(plen*2)-1] = tail;
+          }else{
+            packet[0] = head;
+            packet[1] = tail;
+          }
+          simret = hmcsim_send( &hmc, &(packet[0]) );
+        } else {
+			    // printf("ERROR : FATAL : MALFORMED PACKET\n");
+  			}
+
+        switch ( simret ) {
+          case 0:
+            all_sent++;
+            /*
+      			 * zero the packet
+      			 *
+      			 */
+      			zero_packet( &(packet[0]) );
+
+      			tag++;
+      			if( tag == 2048 ){
+      				tag = 0;
+      			}
+
+      			link++;
+      			if( link == hmc.num_links ){
+      				/* -- TODO : look at the number of connected links
+      				 * to the host processor
+      				 */
+      				link = 0;
+      			}
+            // goto read_next_trace;
+            break;
+          case HMC_STALL:
+            // printf( "STALLED : PACKET WAS STALLED IN SENDING\n" );
+            /* Go to receive side */
+            recvflg = 1;
+            goto packet_recv;
+            break;
+          default:
+            // printf( "FAILED : PACKET SEND FAILED\n" );
+            goto complete_failure;
+            break;
+        } // end of switch
+
+     }  // end of dmctrace == update
+
+read_next_trace:
+    if (dmctrace->update == 1) {
+      /* reset the dmctrace*/
+      dmctrace->type = -1;
+      dmctrace->size = 0;
+      dmctrace->update = 0;
+      dmctrace->addr = 0x00ull;
+    }
+
+    /* read a request from the input file */
     if( input == 2 ){
 		  done = read_trace_pipe( fd, &rqst );
 		  /*valid rqsts should fall into the physical address space in spike linux kernel*/
@@ -722,31 +1065,131 @@ int main( int argc, char **argv ){
 		  	while(done == -1 || rqst.addr >= 0xffffffff){
 		  		done = read_trace( infile, &rqst );
 		  	}
-
 	  }
+
+    /* set flag showing this is the end of dmc trace*/
+    if( done == 1 ) {
+      dmctrace->end = 1;
+      if( all_sent == all_recv ) {
+        printf( "ALL_TRACES = %ld\n", trace );
+        simdone = 1;
+        print_power(&hmc);
+      }
+    }
+
+    /* at this point, if done == 1 means finished reading all trace file */
+packet_recv:
+    if( recvflg == 1) {
+      recvflg = 0;
+      simret = HMC_OK;
+      while( simret != HMC_STALL ) {
+        for( i = 0; i < hmc.num_links; i++ ) {
+          rtns[i] = hmcsim_recv( &hmc, cub, i, &(packet[0]) );
+          if( rtns[i] == HMC_STALL ) {
+            stall_sig++;
+          }else {
+            hmcsim_decode_memresponse(  &hmc,
+	                                    &(packet[0]),
+	                                    &d_response_head,
+	                                    &d_response_tail,
+	                                    &d_type,
+	                                    &d_length,
+	                                    &d_tag,
+	                                    &d_rtn_tag,
+	                                    &d_src_link,
+	                                    &d_rrp,
+	                                    &d_frp,
+	                                    &d_seq,
+	                                    &d_dinv,
+	                                    &d_errstat,
+	                                    &d_rtc,
+	                                    &d_crc );
+            all_recv++;
+          }
+          /*
+  				 * zero the packet
+  				 *
+  				 */
+  				zero_packet( &(packet[0]) );
+        }
+        /* count the number of stall signals received */
+  			if( stall_sig == hmc.num_links ){
+  				/*
+  				 * if all links returned stalls,
+  				 * then we're done receiving packets
+  				 *
+  				 */
+
+  				// printf( "STALLED : STALLED IN RECEIVING\n" );
+  				simret = HMC_STALL;
+  			}
+
+  			stall_sig = 0;
+  			for( i=0; i< hmc.num_links; i++){
+  				rtns[i] = HMC_OK;
+  			}
+      }// end of receive while
+      /*
+  		 * reset the return code
+  		 *
+  		 */
+  		stall_sig = 0;
+  		for( i=0; i< hmc.num_links; i++){
+  			rtns[i] = HMC_OK;
+  		}
+  		simret = HMC_OK;
+
+      /*
+  	 	 * done with sending/receiving packets
+  		 * update the clock
+  		 */
+
+  		hmcsim_clock( &hmc );
+
+      if( dmctrace->end == 1 ) {
+        if( all_sent == all_recv ) {
+          printf( "ALL_TRACES = %ld\n", trace );
+  				simdone = 1;
+  				print_power(&hmc);
+        }
+      } else {
+        goto read_next_trace;
+      }
+
+    }// end of if recvflg
+
 
 #ifdef DEBUG
 		printf( "::DEBUG::    Read_trace completed()\n");
 #endif
 
-	}
+} // end of the outside while
 
-        /* flush any remaining requests */
-        ucode_flush();
+  /* flush any remaining requests */
+  ucode_flush();
 
-        /* free ucode memory */
-        ucode_free();
+  /* free ucode memory */
+  ucode_free();
 
-        if( input == 0 ){
-	  fclose( infile );
-        }else if( input == 2 ){
-          close( fd );
-        }
+complete_failure:
+  hmcsim_free( &hmc );
+  free(dmctrace);
+  fclose( outfile );
+  outfile = NULL;
+  free( rtns );
+  rtns = NULL;
+
+  if( input == 0 ){
+    fclose( infile );
+  }else if( input == 2 ){
+    close( fd );
+  }
+
 	infile = NULL;
 
-        if( stats == 1 ){
-          print_stats();
-        }
+  if( stats == 1 ){
+    print_stats();
+  }
 
 	printf("Total Page request number: %llu\n",page_num);
 	printf( "--------------------------------------------------\n" );
@@ -773,6 +1216,7 @@ int main( int argc, char **argv ){
 
 	printf( "--------------------------------------------------\n" );
 	*/
+
 	return 0;
 }
 /* EOF */

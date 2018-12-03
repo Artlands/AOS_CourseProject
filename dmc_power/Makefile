@@ -13,8 +13,8 @@ LIBS = -L/Users/Artlands/Desktop/AdvancedOS/projects/gc64-hmcsim -lhmcsim
 SRC=./src
 
 all: dmc_power
-$(SRC)/dmc_power.o: $(SRC)/dmc_power.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+# $(SRC)/dmc_power.o: $(SRC)/dmc_power.c
+# 	$(CC) $(CFLAGS) -c -o $@ $<
 
 dmc_power: $(SRC)/dmc_power.o
 	$(CC) $(CFLAGS) -o $@ $(SRC)/dmc_power.c $(LIBS)

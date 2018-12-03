@@ -15,7 +15,6 @@ extern "C" {
 #include <stdint.h>
 #include "dmc_ucode_mem.h"
 
-
 /*
  * struct mtrace
  * contains struct data for an individual memory trace
@@ -24,8 +23,15 @@ struct mtrace{
   uint32_t proc;			/* proc id */
   MEMOP op;				/* memory operation type */
   uint64_t addr;			/* base address of the request */
-  int type;       /* memory operation type marked in int, 0-WR, 1-RD, 2-EX*/
-  int update;     /* 0-not updated, 1-updated*/
+};
+
+/* FOR MEMORY POWER TRACE*/
+struct mptrace {
+  int type;       /* 0 = WR 1 = RD */
+  int size;       /* memory operation size */
+  int update;     /* 0 = NOT update, 1 = update*/
+  int end;        /* 0 = NOT end, 1 = end*/
+  uint64_t addr;  /* base address of the request */
 };
 
 struct hmcrqst{
@@ -73,7 +79,7 @@ typedef struct hmc_list{
  * Globals
  *
  */
-extern struct mtrace *hmctrace;
+extern struct mptrace *dmctrace;
 
 extern struct dmc __config;
 //extern int total_read_bytes[MAX_WRITE_TIME*2];
@@ -115,6 +121,8 @@ extern uint64_t h_RD256;
 extern void trace_read( int sz, uint64_t addr);
 extern void trace_write( int sz, uint64_t addr );
 extern void trace();
+
+// extern int print_power(struct hmcsim_t *hmc)
 
 #ifdef __cplusplus
 }/* extern C */

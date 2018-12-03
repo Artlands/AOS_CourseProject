@@ -47,22 +47,22 @@ static int print_power(struct hmcsim_t *hmc) {
    * write out the total trace values for power on this clock cycle
    *
    */
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_LINK_PHY_POWER : ",
                          hmc->power.t_link_phy );
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_LINK_LOCAL_ROUTE_POWER : ",
                          hmc->power.t_link_local_route );
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_LINK_REMOTE_ROUTE_POWER : ",
                          hmc->power.t_link_remote_route );
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_XBAR_RQST_SLOT_POWER : ",
@@ -72,27 +72,27 @@ static int print_power(struct hmcsim_t *hmc) {
                          hmc->clk,
                          " : T_XBAR_RSP_SLOT_POWER : ",
                          hmc->power.t_xbar_rsp_slot);
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_XBAR_ROUTE_EXTERN_POWER : ",
                          hmc->power.t_xbar_route_extern);
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_VAULT_RQST_SLOT_POWER : ",
                          hmc->power.t_vault_rqst_slot);
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_VAULT_RSP_SLOT_POWER : ",
                          hmc->power.t_vault_rsp_slot);
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_VAULT_CTRL_POWER : ",
                          hmc->power.t_vault_ctrl);
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_ROW_ACCESS_POWER : ",
@@ -422,7 +422,7 @@ static int read_hmc_trace( FILE *infile, struct hmcmtrace *otrace ){
   }else if( strcmp( buf, "PG" ) == 0 ){
 		return -1;
 	}else{
-		printf( "error : erroneous message type : %s\n", token );
+		// printf( "error : erroneous message type : %s\n", token );
 		return -1;
 	}
 

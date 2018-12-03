@@ -32,8 +32,8 @@ hmc_list *tail	      = NULL;
 int tree_cnt[32];
 int gcount	      = 0;
 struct dmc __config;
-uint64_t base_addr[MAX_WRITE_TIME*2];    /* base address of the tree */ 
-uint64_t temp_addr[MAX_WRITE_TIME*2];    /* temporary address for the logic testing*/ 
+uint64_t base_addr[MAX_WRITE_TIME*2];    /* base address of the tree */
+uint64_t temp_addr[MAX_WRITE_TIME*2];    /* temporary address for the logic testing*/
 btree *temp[MAX_WRITE_TIME*2];           /* temp node represent the previous node been inserted*/
 
 uint64_t accelerated_page	=	0;
@@ -45,7 +45,7 @@ static int sort_root(){
 	int 	i	= 0;
 	int 	j 	= 0;
 	uint64_t min	= 0x0;
-	btree	tmp; 
+	btree	tmp;
 	for(i = 0; i < MAX_WRITE_TIME*2-1; i++){
 		if(root[i].req.addr == 0)
 			break;
@@ -55,11 +55,11 @@ static int sort_root(){
 				//break;
 			if(root[j].req.addr < min){
 				min = root[j].req.addr;
-				
+
 				tmp.req.addr 	= root[j].req.addr;
 				root[j].req.addr= root[i].req.addr;
 				root[i].req.addr= tmp.req.addr;
-				
+
 				tmp.left    	= root[j].left;
 				root[j].left	= root[i].left;
 				root[i].left	= tmp.left;
@@ -67,11 +67,11 @@ static int sort_root(){
 				tmp.right    	= root[j].right;
 				root[j].right	= root[i].right;
 				root[i].right	= tmp.right;
-	
+
 				tmp.req.op	= root[j].req.op;
 				root[j].req.op	= root[i].req.op;
-				root[i].req.op	= tmp.req.op;  
-			}	
+				root[i].req.op	= tmp.req.op;
+			}
 		}
 
 	}
@@ -83,13 +83,13 @@ static int sort_root(){
 static int coal_across_pages_2(){
 	int	i	= 0;
 	int	j	= 0;
-	btree*	left	= NULL;	
+	btree*	left	= NULL;
 	btree*	right	= NULL;
 
 	//for(i = 0; i < MAX_WRITE_TIME*2; i++)
 		//printf("root[%d].addr= %016lx\n", i, root[i].req.addr);
 
-	
+
 	for(i = 0; i < MAX_WRITE_TIME*2; i++){
 		if(root[i].req.addr == 0 || root[i].left == NULL && root[i].right == NULL )
 			continue;
@@ -100,7 +100,7 @@ static int coal_across_pages_2(){
 			if(root[i].req.addr + 0x1000 == root[j].req.addr||root[i].req.addr == root[j].req.addr + 0x1000 ){
 					//Append tree i into tree j
 					if(root[i].req.addr < root[j].req.addr){
-						
+
 						if(root[i].left != NULL){
 							if(root[j].left != NULL){
 								left 		= get_left_leaf(root[j].left);
@@ -111,7 +111,7 @@ static int coal_across_pages_2(){
 						}
 						root[i].left 	= NULL;
 
-						if(root[i].right != NULL){	
+						if(root[i].right != NULL){
 							if(root[j].right != NULL){
 								left 		= get_left_leaf(root[j].right);
 								left->left 	= root[i].right;
@@ -126,7 +126,7 @@ static int coal_across_pages_2(){
 
 					//Append tree j into tree i
 					else if(root[i].req.addr > root[j].req.addr){
-						
+
 						if(root[j].left != NULL){
 							if(root[i].left != NULL){
 								left 		= get_left_leaf(root[i].left);
@@ -137,7 +137,7 @@ static int coal_across_pages_2(){
 						}
 						root[j].left 	= NULL;
 
-						if(root[j].right != NULL){	
+						if(root[j].right != NULL){
 							if(root[i].right != NULL){
 								left 		= get_left_leaf(root[i].right);
 								left->left 	= root[j].right;
@@ -149,7 +149,7 @@ static int coal_across_pages_2(){
 					root[j].req.addr = 0;
 					break;
 					}
-					
+
 			}
 
 
@@ -167,7 +167,7 @@ static int coal_across_pages_2(){
 /*------------------------Coalesce the adjacent requests across the page boundary*/
 static int coal_across_pages(){
 	int	i	= 0;
-	btree*	left	= NULL;	
+	btree*	left	= NULL;
 	btree*	right	= NULL;
 
 	/*Sort the root array*/
@@ -175,7 +175,7 @@ static int coal_across_pages(){
 	//for(i = 0; i < MAX_WRITE_TIME*2; i++)
 		//printf("root[%d].addr= %016lx\n", i, root[i].req.addr);
 
-	
+
 	for(i = 0; i < MAX_WRITE_TIME*2-1; i++){
 		if(root[i].req.addr == 0 )
 			continue;
@@ -192,7 +192,7 @@ static int coal_across_pages(){
 			}
 			root[i].left 	= NULL;
 
-			if(root[i].right != NULL){	
+			if(root[i].right != NULL){
 				if(root[i+1].right != NULL){
 					left 		= get_left_leaf(root[i+1].right);
 						left->left 	= root[i].right;
@@ -485,7 +485,7 @@ static void InOrderTraverse(int index, btree* n, int io, btree* end){
 	}
 	return;
     }*/
-     
+
 	if(n->req.addr + n->req.op - base_addr[index] > 256){
          /* -------------------------- build one hmc request*/
          total_read_bytes[index] = temp_addr[index] - base_addr[index];
@@ -511,11 +511,11 @@ static void InOrderTraverse(int index, btree* n, int io, btree* end){
          }
 
     }
-  
+
 
 
     else if(n == end && io == 1){
-	
+
 
 	/*
 	temp_addr[index] = n->req.addr + (n->req.op&0xFF);
@@ -551,7 +551,7 @@ static void InOrderTraverse(int index, btree* n, int io, btree* end){
                  return;
          }
 
-	
+
     }
 
 
@@ -571,7 +571,7 @@ static void InOrderTraverse(int index, btree* n, int io, btree* end){
 	//printf("before trace for index: %d, temp_addr:%016lx, base_add:%016lx, total_read_bytes: %016lx\n", index,temp_addr[index], base_addr[index],total_read_bytes[index]);
         trace_read( total_read_bytes[index], base_addr[index] );
 
-        /* -------------------------- reset the base address, temp node and temp address*/	
+        /* -------------------------- reset the base address, temp node and temp address*/
         temp[index] 	     	  = n;
         base_addr[index]    	  = n->req.addr;
         temp_addr[index]    	  = n->req.addr + n->req.op;
@@ -593,7 +593,7 @@ static void InOrderTraverse(int index, btree* n, int io, btree* end){
         total_write_bytes[index] = temp_addr[index] - base_addr[index];
         trace_write( total_write_bytes[index], base_addr[index] );
 	//printf("for index: %d, temp_addr:%016lx, base_add:%016lx, total_write_bytes: %016lx\n", index,temp_addr[index], base_addr[index],total_write_bytes[index]);
-        /* -------------------------- reset the base address, temp node and temp address*/	
+        /* -------------------------- reset the base address, temp node and temp address*/
         temp[index] 	     	  = n;
         base_addr[index]    	  = n->req.addr;
         temp_addr[index]    	  = n->req.addr + (n->req.op&0xFF);
@@ -695,7 +695,7 @@ extern void ucode_insert(struct mtrace rqst, int index){
     printf("...out of nodes\n");
 #endif
 
-    coal_across_pages(); 
+    coal_across_pages();
 
     for(i = 0; i < MAX_WRITE_TIME*2; i++){
 	if(root[i].req.addr == 0)
@@ -720,7 +720,7 @@ extern void ucode_insert(struct mtrace rqst, int index){
       total_read_bytes[i]  = 0;
       base_addr[i] 	= 0;
       temp_addr[i]      = 0;
-      temp[i]	   	= NULL; 
+      temp[i]	   	= NULL;
       read_timeout      = 0;
     }
 
@@ -742,14 +742,14 @@ extern void ucode_insert(struct mtrace rqst, int index){
       total_write_bytes[i] = 0;
       base_addr[i] 	= 0;
       temp_addr[i]      = 0;
-      temp[i]	   	= NULL; 
+      temp[i]	   	= NULL;
       write_timeout     = 0;
     }
         if(cnt_flag == 1){
 		cnt_flag = 0;
 		count++;
 	}
-      
+
    }
    //count += gcount;
    //printf("count = %d\n",count);
@@ -779,7 +779,7 @@ extern void ucode_insert(struct mtrace rqst, int index){
   //tmp->right	= NULL;
 
   /* insert read requests from RISCV cores */
-  if( (tmp->req.op >= RD1) && (tmp->req.op <= RD16) ) {
+  if( (tmp->req.op >= RD1) && (tmp->req.op <= RD15) ) {
 #ifdef DEBUG
     printf( "...inserting read request %016lx into index: %d\n", tmp->req.addr, index );
 #endif
@@ -793,7 +793,7 @@ extern void ucode_insert(struct mtrace rqst, int index){
   }
 
   /* insert write requests from RISCV cores */
-  if( (tmp->req.op >= WR1) && (tmp->req.op <= WR16) ) {
+  if( (tmp->req.op >= WR1) && (tmp->req.op <= WR15) ) {
 #ifdef DEBUG
     printf( "...inserting write request into index: %d\n", index );
 #endif
@@ -813,12 +813,12 @@ extern void ucode_insert(struct mtrace rqst, int index){
    * clear read requests in the tree
    *
    */
- 
+
   if( (total_read_bytes[index] >= 256) || (read_timeout >= MAX_READ_TIME) ){
 #ifdef DEBUG
     printf( "...expiring read tree, index = %d\n", index );
 #endif
-	
+
     pri = get_left_leaf( root[index].left );
     end = get_right_leaf( root[index].left );
     /* --- add logic to build the hmc requests. */
@@ -867,10 +867,10 @@ extern void ucode_insert(struct mtrace rqst, int index){
 
     total_write_bytes[index] = 0;
     write_timeout     = 0;
-    
+
   }
   //if ((root[index].left == NULL && root[index].right == NULL)){
-//	gcount++; 
+//	gcount++;
 	//printf("gcount = %d\n", gcount);
   //}
   trace();
@@ -890,7 +890,7 @@ extern void ucode_flush(){
 #ifdef DEBUG
   printf( "...ucode_flush()\n" );
 #endif
- coal_across_pages(); 
+ coal_across_pages();
 
   /*recursively flush all the coalescing tree*/
   for(index = 0; index < MAX_WRITE_TIME*2; index++){
@@ -942,7 +942,7 @@ extern void ucode_flush(){
    }
    //count += gcount;
    tree_cnt[count-1]++;
-   //gcount = 0; 
+   //gcount = 0;
 }
 
 /* ---------------------------------------- UCODE_FREE */

@@ -9,113 +9,8 @@
 #include <stdio.h>
 #include "dmc_ucode.h"
 
-static int get_hmcmemop( int type, int nbytes, MEMOP *op ){
-
-	if( type == 0 ){
-		switch( nbytes )
-		{
-			case 1 :
-				*op = WR16;
-				break;
-			case 2 :
-				*op = WR16;
-				break;
-			case 4 :
-				*op = WR16;
-				break;
-			case 8 :
-				*op = WR16;
-				break;
-			case 16:
-				*op = WR16;
-				break;
-			case 32:
-				*op = WR32;
-				break;
-			case 48:
-				*op = WR48;
-				break;
-			case 64:
-				*op = WR64;
-				break;
-			case 80:
-				*op = WR80;
-				break;
-			case 96:
-				*op = WR96;
-				break;
-			case 112:
-				*op = WR112;
-				break;
-			case 128:
-				*op = WR128;
-				break;
-			// case 256:
-			// 	*op = WR256;
-			// 	break;
-			default:
-				return -1;
-				break;
-		}
-		return 0;
-	}else if( type == 1 ){
-		switch( nbytes )
-		{
-			case 1 :
-				*op = RD16;
-				break;
-			case 2 :
-				*op = RD16;
-				break;
-			case 4 :
-				*op = RD16;
-				break;
-			case 8 :
-				*op = RD16;
-				break;
-			case 16:
-				*op = RD16;
-				break;
-			case 32:
-				*op = RD32;
-				break;
-			case 48:
-				*op = RD48;
-				break;
-			case 64:
-				*op = RD64;
-				break;
-			case 80:
-				*op = RD80;
-				break;
-			case 96:
-				*op = RD96;
-				break;
-			case 112:
-				*op = RD112;
-				break;
-			case 128:
-				*op = RD128;
-				break;
-			// case 256:
-			// 	*op = RD256;
-			// 	break;
-			default:
-				return -1;
-				break;
-		}
-		return 0;
-	}else if ( type == 2 ){
-		*op = FLOW_NULL;
-	}else{
-		return -1;
-	}
-	return 0;
-}
-
 /* ---------------------------------------------- TRACE_READ */
 extern void trace_read( int sz, uint64_t addr){
-  MEMOP op_rd;
 
   /* TODO : make this block more efficient */
   if( sz%16 != 0 ){
@@ -123,19 +18,15 @@ extern void trace_read( int sz, uint64_t addr){
     if( sz>128){sz=256;}
   }
 
+
   if( (__config.conf & CONF_TRACE) > 0 ){
-
-    get_hmcmemop(1, sz, &op)
-
-    //printf( "HMC_READ:%d:0x%016llx\n", sz, addr );
-    // printf( "RD:8:0:0x%016llx\n", addr );
-    /* send data to an extern object */
-    hmctrace->proc = 0;
-    hmctrace->op = op_rd;
-    hmctrace->addr = addr;
-    hmctrace->type = 1;
-    hmctrace->update = 1;
-
+    // coalesced memory, send to hmc-sim
+    //printf( "HMC_READ:%d:0x%016lx\n", sz, addr );
+    // printf( "RD:8:0:0x%016lx\n", addr );
+    dmctrace->type = 1;
+    dmctrace->size = sz;
+    dmctrace->update = 1;
+    dmctrace->addr = addr;
   }
 
   /* update the counters */
@@ -175,7 +66,7 @@ extern void trace_read( int sz, uint64_t addr){
 
 /* ---------------------------------------------- TRACE_WRITE */
 extern void trace_write(int sz, uint64_t addr){
-  MEMOP op_wr;
+
   /* TODO : make this block more efficient */
   if( sz%16 != 0 ){
     sz = ((sz/16)+1)*16;
@@ -183,16 +74,12 @@ extern void trace_write(int sz, uint64_t addr){
   }
 
   if( (__config.conf & CONF_TRACE) > 0 ){
-    get_hmcmemop(0, sz, &op)
-
-    //printf( "HMC_READ:%d:0x%016llx\n", sz, addr );
-    // printf( "RD:8:0:0x%016llx\n", addr );
-    /* send data to an extern object */
-    hmctrace->proc = 0;
-    hmctrace->op = op_wr;
-    hmctrace->addr = addr;
-    hmctrace->type = 0;
-    hmctrace->update = 1;
+    //printf( "HMC_WRITE:%d:0x%016lx\n", sz, addr );
+   	// printf( "WR:8:0:0x%016lx\n",addr );
+    dmctrace->type = 0;
+    dmctrace->size = sz;
+    dmctrace->update = 1;
+    dmctrace->addr = addr;
   }
 
   /* update the counters */

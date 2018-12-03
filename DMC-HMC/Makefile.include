@@ -2,9 +2,9 @@
 #
 # GC64-DMC Software Makefile include
 #
-# RISCV=/opt/riscv
+RISCV=/opt/riscv
 
 #CC=/opt/riscv/bin/riscv64-unknown-elf-gcc
 #AS=/opt/riscv/bin/riscv64-unknown-elf-as
-CC=gcc
+CC = gcc
 #CC_LINUX=/opt/riscv/bin/riscv64-unknown-linux-gnu-gcc

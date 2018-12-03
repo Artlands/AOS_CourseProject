@@ -93,4 +93,13 @@ follows:
 $> $RISCV/bin/spike pk ./dmc_driver -f ./examples/trace.small.out
 
 --------------------------------------------------------------
+
+  Add Power-Sim function (only simulate coalesced memory trace):
+    - include "hmc_sim.h" in driver.c
+    - change MEMOP type RD16->RD15, WR16->WR15 in dmc_ucode_mem.h, ucode.c
+    - add struct mptrace, extern struct mptrace *dmctrace in dmc_ucode.h
+    - %lu - >%llu
+
+
+--------------------------------------------------------------
 EOF
