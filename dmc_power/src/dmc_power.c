@@ -68,7 +68,7 @@ static int print_power(struct hmcsim_t *hmc) {
                          hmc->clk,
                          " : T_XBAR_RQST_SLOT_POWER : ",
                          hmc->power.t_xbar_rqst_slot);
-    fprintf( hmc->tfile, "%s%"PRIu64"%s%f\n",
+    fprintf( hmc->tfile, "%s%"PRIu64"%s%"PRIu64"\n",
                          "HMCSIM_TRACE : ",
                          hmc->clk,
                          " : T_XBAR_RSP_SLOT_POWER : ",
